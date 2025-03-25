@@ -2,17 +2,25 @@ package ch.heigvd.iict.dma.labo2
 
 import android.Manifest
 import android.bluetooth.BluetoothManager
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import ch.heigvd.iict.dma.labo2.databinding.ActivityMainBinding
+import org.altbeacon.beacon.AltBeaconParser
+import org.altbeacon.beacon.Beacon
+import org.altbeacon.beacon.BeaconManager
+import org.altbeacon.beacon.BeaconParser
+import org.altbeacon.beacon.BeaconRegion
 
 
 class MainActivity : AppCompatActivity() {
@@ -50,15 +58,28 @@ class MainActivity : AppCompatActivity() {
                 Manifest.permission.ACCESS_COARSE_LOCATION))
         }
 
+        // Configuration du BeaconManager
+        val beaconManager = BeaconManager.getInstanceForApplication(this)
+        beaconManager.beaconParsers.add(
+            BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24")
+        )
+
         // init views
         val beaconAdapter = BeaconsAdapter()
         binding.beaconsList.adapter = beaconAdapter
         binding.beaconsList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
+        // monitor
+        val region = BeaconRegion("test", BeaconParser(), null, null, null)
+        beaconManager.getRegionViewModel(region).rangedBeacons.observe(this, rangingObserver)
+        Log.d(TAG, "Observer added")
+        beaconManager.startRangingBeacons(region)
+        beaconManager.startMonitoring(region)
+
         // update views
         beaconsViewModel.closestBeacon.observe(this) {beacon ->
             if(beacon != null) {
-                binding.location.text = "TODO"
+                binding.location.text = beacon.toString()
             } else {
                 binding.location.text = getString(R.string.no_beacons)
             }
@@ -75,6 +96,14 @@ class MainActivity : AppCompatActivity() {
             beaconAdapter.items = nearbyBeacons
         }
 
+    }
+
+    // observer for ranging
+    val rangingObserver = Observer<Collection<Beacon>> { beacons ->
+        Log.d(TAG, "Ranged: ${beacons.count()} beacons")
+        for (beacon: Beacon in beacons) {
+            Log.d(TAG, "$beacon about ${beacon.distance} meters away")
+        }
     }
 
     private val requestBeaconsPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
