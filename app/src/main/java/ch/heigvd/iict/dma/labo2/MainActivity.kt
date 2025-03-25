@@ -104,6 +104,7 @@ class MainActivity : AppCompatActivity() {
         for (beacon: Beacon in beacons) {
             Log.d(TAG, "$beacon about ${beacon.distance} meters away")
         }
+        beaconsViewModel.updateNearbyBeacons(beacons.toList())
     }
 
     private val requestBeaconsPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
