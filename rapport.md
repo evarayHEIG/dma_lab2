@@ -39,7 +39,7 @@ sont pas détectées à chaque cycle d'annonce.
 
 > 1.1.2 Nous souhaitons effectuer un positionnement en arrière-plan, à quel moment faut-il démarrer
 > et éteindre le monitoring des balises ? Sans le mettre en place, que faudrait-il faire pour
-> pouvoir continuer le monitoring alors que l’activité n’est plus active ?
+> pouvoir continuer le monitoring alors que l’activité n’est plus active ? PAS FINI
 
 Aller voir la partie background detection
 ici: [https://altbeacon.github.io/android-beacon-library/documentation.html](https://altbeacon.github.io/android-beacon-library/documentation.html)
@@ -64,7 +64,7 @@ RSSI pour un certain appareil. La fomrule utilisée est: `d=A*(r/t)^B+C` où
 
 - `d` est la distance estimée en mètres
 - `r` est le RSSI mesuré
-- `t` est la puissance du signal à 1 mètre
+- `t` est la puissance du signal à 1 mètre (TxPower)
 - `A`, `B` et `C` sont des constantes spécifiques à l'appareil
 
 Au niveau de la fiabilité, il ne faut pas attendre une trop grande précision pour la distance
@@ -94,7 +94,20 @@ La stratégie de filtrage est donc la suivante :
 
 > 2.1.1 Comment pouvons-nous déterminer notre position ? Est-ce uniquement basé sur notion de
 > proximité étudiée dans la question 1.1.3, selon vous est-ce que d’autres paramètres peuvent
-> être pertinents ?
+> être pertinents ? PAS FINI
+
+Les paramètres pertinents sont:
+
+- `distance`: estime la distance entre le smartphone et le beacon en mètres, peu précis, basée sur
+la comparaison du RSSI reçu avec la puissance du signal à 1 mètre (txPower).
+- `rssi`: représente la puissance du signal Bluetooth reçu, plus le RSSI est élevé, plus le beacon
+  est proche.
+  Cette valeur fluctue beaucoup en raison des interférences environnementales.
+- `txPower`: indique la puissance du signal Bluetooth à 1 mètre de la balise, permet de calibrer le
+  RSSI.
+  C'est une valeur fixée lors de la fabrication de l’iBeacon et intégrée à chaque paquet Bluetooth
+  transmis, elle
+  ne change pas avec le temps.
 
 > 2.1.2 Les iBeacons sont conçus pour permettre du positionnement en intérieur. D’après l’expérience
 > que vous avez acquise sur cette technologie dans ce laboratoire, quels sont les cas d’utilisation
