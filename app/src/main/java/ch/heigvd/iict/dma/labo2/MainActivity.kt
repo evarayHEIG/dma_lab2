@@ -69,6 +69,12 @@ class MainActivity : AppCompatActivity() {
         binding.beaconsList.adapter = beaconAdapter
         binding.beaconsList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
+        // Désactiver les animations de changement qui peuvent causer du clignotement
+        val itemAnimator = binding.beaconsList.itemAnimator
+        if (itemAnimator is androidx.recyclerview.widget.DefaultItemAnimator) {
+            itemAnimator.supportsChangeAnimations = false
+        }
+
         // monitor
         val region = BeaconRegion("test", BeaconParser(), null, null, null)
         beaconManager.getRegionViewModel(region).rangedBeacons.observe(this, rangingObserver)
@@ -79,7 +85,12 @@ class MainActivity : AppCompatActivity() {
         // update views
         beaconsViewModel.closestBeacon.observe(this) {beacon ->
             if(beacon != null) {
-                binding.location.text = beacon.toString()
+                binding.location.text = getString(
+                    R.string.beacon_details,
+                    beacon.major,
+                    beacon.minor,
+                    beacon.distance,
+                    beacon.uuid.toString())
             } else {
                 binding.location.text = getString(R.string.no_beacons)
             }

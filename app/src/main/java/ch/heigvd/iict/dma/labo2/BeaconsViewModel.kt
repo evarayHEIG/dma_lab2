@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
+import ch.heigvd.iict.dma.labo2.models.BeaconCache
 import ch.heigvd.iict.dma.labo2.models.PersistentBeacon
 import org.altbeacon.beacon.Beacon
 import java.util.UUID
@@ -12,6 +13,9 @@ import java.util.UUID
 class BeaconsViewModel : ViewModel() {
 
     private val _nearbyBeacons = MutableLiveData(mutableListOf<PersistentBeacon>())
+
+    // Création du cache de beacons
+    private val beaconCache = BeaconCache()
 
     /*
      *  Remarque
@@ -38,19 +42,17 @@ class BeaconsViewModel : ViewModel() {
     val closestBeacon : LiveData<PersistentBeacon?> get() = _closestBeacon
 
     fun updateNearbyBeacons(beacons : List<Beacon>) {
-        val newBeacons = beacons.map { beacon ->
-            PersistentBeacon(
-                major = beacon.id2.toInt(),
-                minor = beacon.id3.toInt(),
-                uuid = UUID.fromString(beacon.id1.toString()),
-                rssi = beacon.rssi,
-                txPower = beacon.txPower,
-                distance = beacon.distance
-            )
-        }
+        // Conversion des beacons en PersistentBeacon
+        val newBeacons = beacons.map { PersistentBeacon.convertToPersistentBeacon(it) }
 
-        _nearbyBeacons.value = newBeacons.toMutableList()
-        _closestBeacon.value = newBeacons.maxByOrNull { it.rssi }
+        // Mise à jour du cache et récupération de toutes les balises à jour (y compris celles
+        // qui n'apparaissent pas dans la dernière annonce mais qui sont encore valides)
+        val allBeacons = beaconCache.updateCache(newBeacons)
+
+        // Mise à jour des LiveData avec toutes les balises valides
+        _nearbyBeacons.value = allBeacons.toMutableList()
+
+        // Mise à jour de la balise la plus proche (basée sur le RSSI le plus élevé)
+        _closestBeacon.value = allBeacons.maxByOrNull { it.rssi }
     }
-
 }
