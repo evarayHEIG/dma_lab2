@@ -190,10 +190,11 @@ fun updateCache(newBeacons: List<PersistentBeacon>): List<PersistentBeacon> {
 ### Choix d'implémentation
 
 Afin de stocker les positions du smartphone par rapport aux différentes balises, nous avons choisi
-d'utiliser une Map, la __clé__ étant le numéro __mineur__ de la balise et la __valeur__ étant le _
-_nom de la "pièce"__
-dans laquelle se trouve le smartphone. Le __facteur déterminant__ la balise plus proche est la _
-_distance__.
+d'utiliser une Map, déclarée dans le ViewModel, dont la __clé__ est le numéro __mineur__ de la balise et la __valeur__ est le __nom de la "pièce"__
+dans laquelle se trouve le smartphone. On aurait pu choisir l'id complet de la balise (uuid + major + mineur),
+afin de ne pas avoir de collisions mais, dans le cadre de ce labo, utiliser les mineurs est suffisant.
+Le __facteur déterminant__ la balise plus proche est la __distance__ estimée fournie par
+l'API (beacon.getDistance()).
 
 ### Questions
 
