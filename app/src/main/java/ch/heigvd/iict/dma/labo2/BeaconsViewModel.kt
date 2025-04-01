@@ -58,6 +58,6 @@ class BeaconsViewModel : ViewModel() {
         _nearbyBeacons.value = allBeacons.toMutableList()
 
         // Mise à jour de la balise la plus proche (basée sur le RSSI le plus élevé)
-        _closestBeacon.value = allBeacons.maxByOrNull { it.rssi }
+        _closestBeacon.value = allBeacons.minByOrNull { it.distance }
     }
 }
