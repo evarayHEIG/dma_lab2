@@ -8,7 +8,6 @@ import java.util.*
  *  N'hésitez pas à ajouter des attributs ou des méthodes à cette classe
  */
 data class PersistentBeacon(
-    //var id : Long = nextId++,
     var major: Int,
     var minor: Int,
     var uuid: UUID,
@@ -19,7 +18,6 @@ data class PersistentBeacon(
 ) {
 
     companion object {
-        private var nextId = 0L
 
         // Convertir un objet Beacon en PersistentBeacon
         fun convertToPersistentBeacon(beacon: Beacon): PersistentBeacon {

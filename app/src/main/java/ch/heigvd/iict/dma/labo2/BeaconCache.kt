@@ -8,7 +8,7 @@ class BeaconCache {
 
     // Durée de validité d'une balise en millisecondes (5 secondes)
     companion object {
-        const val EXPIRATION_MILLIS = 5000L
+        const val EXPIRATION_MILLIS = 10000L
     }
 
     // Mettre à jour le cache avec les nouvelles balises détectées
