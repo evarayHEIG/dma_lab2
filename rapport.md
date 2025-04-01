@@ -6,12 +6,14 @@
 
 ### Choix d'implémentation
 
+#### Mise en place de la détection des beacons
+
 ```kotlin
         // Configuration du BeaconManager
-        val beaconManager = BeaconManager.getInstanceForApplication(this)
-        beaconManager.beaconParsers.add(
-            BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24")
-        )
+val beaconManager = BeaconManager.getInstanceForApplication(this)
+beaconManager.beaconParsers.add(
+    BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24")
+)
 ```
 
 Pour détecter les balises à proximité, nous avons utilisé la bibliothèque Android Beacon Library. La
@@ -22,16 +24,36 @@ l'annonce Bluetooth et les convertir en objets `Beacon` que nous pouvons utilise
 
 ```kotlin
         // monitor
-        val region = BeaconRegion("test", BeaconParser(), null, null, null)
-        beaconManager.getRegionViewModel(region).rangedBeacons.observe(this, rangingObserver)
-        Log.d(TAG, "Observer added")
-        beaconManager.startRangingBeacons(region)
-        beaconManager.startMonitoring(region)
+val region = BeaconRegion("test", BeaconParser(), null, null, null)
+beaconManager.getRegionViewModel(region).rangedBeacons.observe(this, rangingObserver)
+Log.d(TAG, "Observer added")
+beaconManager.startRangingBeacons(region)
+beaconManager.startMonitoring(region)
 ```
 
 Ensuite, nous avons créé une `BeaconRegion` pour définir les critères de détection des balises. Ici,
-nous avons utilisé un `BeaconRegion` générique qui correspond à toutes les balises iBeacon. Nous avons
-ensuite ajouté un `Observer` pour écouter les balises détectées et démarré le monitoring et le scanning. Le `BeaconManager` va alors commencer à recevoir les annonces Bluetooth des balises à proximité.
+nous avons utilisé un `BeaconRegion` générique qui correspond à toutes les balises iBeacon. Nous
+avons
+ensuite ajouté un `Observer` pour écouter les balises détectées et démarré le monitoring et le
+scanning. Le `BeaconManager` va alors commencer à recevoir les annonces Bluetooth des balises à
+proximité.
+
+#### Mise en place d'un cache
+
+Afin de permettre de lisser les annonces, nous avons mis en place un cache qui garde une map
+de tous les beacons détectés récemment. Nous avons décidé de laisser une période de grâce de 10
+secondes à tous les beacons qui ne sont plus détectés. Cela veut dire que si un beacon n'est plus
+détecté, il apparait tout de même dans la liste des beacons proche dans l'application. Si ce
+beacon n'est pas détecté à nouveau dans les 10 secondes, il est effacé du cache. Pour mettre cela
+en place, nous avons dû ajouter un attribut `lastSeen` à la classe `PersistentBeacon` qui
+représente la dernière fois que le beacon a été détecté. Nous avons également modifié l'id
+du beacon pour qu'il soit unique et qu'il puisse être utilisé comme clé dans la map. Pour cela,
+l'id du beacon est maintenant une concaténation de son uuid, de son major et de son mineur. Pour
+représenter le cache, nous avons créé une classe `BeaconCache` qui contient une map dont la clé
+est l'id du beacon et la valeur est un objet `PersistentBeacon`. Cette classe contient une
+méthode `updateCache` qui met à jour le cache en fonction des beacons détectés et s'occupe de
+gérer la période de grâce. Le ViewModel de l'application contient une instance de cette classe
+et l'utilise pour mettre à jour la liste des beacons à afficher dans l'application.
 
 ### Questions
 
@@ -66,19 +88,27 @@ sont pas détectées à chaque cycle d'annonce.
 > et éteindre le monitoring des balises ? Sans le mettre en place, que faudrait-il faire pour
 > pouvoir continuer le monitoring alors que l’activité n’est plus active ?
 
-Le moment idéal pour activer le monitoring des balises et lors de l'entrée dans une zone d'intérêt, comme un magasin
-, un musée ou une zone contenant de beacons. Cela peut être détecter à l'aide de la gélocalisation ou de Geofencing.
-De la même manière, lorsque l'utiisateur sort de la zone d'intérêt, il faudrait éteindre le monitoring des balises, ou lorsqu'aucune balise n'a été détectée depuis un certain temps.
+Le moment idéal pour activer le monitoring des balises et lors de l'entrée dans une zone d'intérêt,
+comme un magasin
+, un musée ou une zone contenant de beacons. Cela peut être détecter à l'aide de la gélocalisation
+ou de Geofencing.
+De la même manière, lorsque l'utiisateur sort de la zone d'intérêt, il faudrait éteindre le
+monitoring des balises, ou lorsqu'aucune balise n'a été détectée depuis un certain temps.
 
-On va activer le monitoring des balises en arrière plan lorsque l'application entre en arrière plan et/ou est fermée et que le monitoring est toujours nécessaire.
-Le monitoring peut être arrêté à l'arrêt de l'application, à la demande de l'utilisateur, ou lorsque l'application revient en premier plan
-Pour continuer le monitoring lorsque l'activité n'est plus active, on pourrait utiliser les services foreground d'android.
+On va activer le monitoring des balises en arrière plan lorsque l'application entre en arrière plan
+et/ou est fermée et que le monitoring est toujours nécessaire.
+Le monitoring peut être arrêté à l'arrêt de l'application, à la demande de l'utilisateur, ou lorsque
+l'application revient en premier plan
+Pour continuer le monitoring lorsque l'activité n'est plus active, on pourrait utiliser les services
+foreground d'android.
 
+On pourrait définir une classe service pour notre beacon pour faire le monitoring des données en
+arrière plan.
+Il faudrait définir la méthode `startForeground()` et définir une notification à afficher lorsque
+l'application run en arrière plan.
 
-On pourrait définir une classe service pour notre beacon pour faire le monitoring des données en arrière plan.
-Il faudrait définir la méthode `startForeground()` et définir une notification à afficher lorsque l'application run en arrière plan.
-
-Dans le AndroidManifest, il faut demander les autorisations pour le service foreground et déclarer le service que l'on vient de créer.
+Dans le AndroidManifest, il faut demander les autorisations pour le service foreground et déclarer
+le service que l'on vient de créer.
 
 > 1.1.3 On souhaite trier la liste des balises détectées de la plus proche à la plus éloignée,
 > quelles sont
@@ -136,9 +166,9 @@ _distance__.
 
 > 2.1.1 Comment pouvons-nous déterminer notre position ? Est-ce uniquement basé sur notion de
 > proximité étudiée dans la question 1.1.3, selon vous est-ce que d’autres paramètres peuvent
-> être pertinents ? PAS FINI
+> être pertinents ?
 
-Les paramètres pertinents sont:
+Comme déjà dit dans la réponse à la question 1.1.3, les paramètres pertinents sont:
 
 - `distance`: estime la distance entre le smartphone et le beacon en mètres, peu précis, basée sur
   la comparaison du RSSI reçu avec la puissance du signal à 1 mètre (txPower).
@@ -150,6 +180,15 @@ Les paramètres pertinents sont:
   C'est une valeur fixée lors de la fabrication de l’iBeacon et intégrée à chaque paquet Bluetooth
   transmis, elle
   ne change pas avec le temps.
+
+Ces paramètres sont en lien avec la notion de proximité. Cependant, d'autres paramètres peuvent
+être utilisés de manière intelligente pour améliorer la précision du positionnement. Dans ce labo,
+tous les beacons ont le même major mais on peut penser à une utilisation du major
+qui nous permettrait d'obtenir de plus amples informations sur la position de la balise. Par
+exemple, si on utilise les beacons dans un bâtiment, on pourrait imaginer que le major correspond à
+un étage et le mineur à une pièce. Grâce à cela, on pourrait savoir dans quelle pièce et à quel
+étage
+on se trouve, ce qui permet d'affiner le positionnement.
 
 > 2.1.2 Les iBeacons sont conçus pour permettre du positionnement en intérieur. D’après l’expérience
 > que vous avez acquise sur cette technologie dans ce laboratoire, quels sont les cas d’utilisation

@@ -11,6 +11,11 @@ import java.util.*
  * @author Eva Ray
  */
 class BeaconCache {
+
+    /**
+     * A map that stores beacons using their unique identifier as the key.
+     * The value is a PersistentBeacon object representing the beacon's details.
+     */
     private val beacons = HashMap<String, PersistentBeacon>()
 
     /**
