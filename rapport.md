@@ -83,12 +83,18 @@ reçues de manière intermittente et peuvent être manquées en raison de plusie
 - __Rotation des appareils__ : L'orientation du téléphone peut affecter la réception du signal.
 
 Pour "lisser" les annonces et éviter de perdre momentanément certaines balises, il faut mettre en
-place un mécanisme de persistance temporaire. Voici comment procéder:
+place un mécanisme de persistance temporaire. Il est possible de faire cela en maintenant un
+cache. Voici une approche possible:
 
-1. Maintenir une liste de balises avec un timestamp de dernière détection
-2. À chaque nouvelle annonce, mettre à jour les balises détectées
-3. Conserver les balises non détectées pendant une période de grâce (par exemple 5-10 secondes)
-4. Supprimer les balises qui n'ont pas été détectées pendant plus longtemps que cette période
+1. Ajouter un attribut ``lastSeen`` à la classe `PersistentBeacon` pour stocker le dernier moment où la balise a été
+   détectée.
+2. Garder une map de tous les beacons détectés récemment, où la clé est l'id du beacon (uuid + major +
+   mineur) et la valeur est un objet `PersistentBeacon`.
+3. À chaque nouvelle annonce, mettre à jour le cache avec les balises détectées en mettant à jour
+   leur attribut `lastSeen`.
+4. Conserver les balises non détectées dans le cache pendant une période de grâce (par exemple 5-10 secondes)
+5. Supprimer les balises qui n'ont pas été détectées pendant plus longtemps que cette période de
+   grâce.
 
 Cette approche permet d'avoir une vue plus stable des balises à proximité, même si certaines ne
 sont pas détectées à chaque cycle d'annonce.
