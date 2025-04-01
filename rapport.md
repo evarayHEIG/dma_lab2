@@ -4,7 +4,34 @@
 
 ## 1. Lister les balises à portée
 
-### Choix d'implémenation
+### Choix d'implémentation
+
+```kotlin
+        // Configuration du BeaconManager
+        val beaconManager = BeaconManager.getInstanceForApplication(this)
+        beaconManager.beaconParsers.add(
+            BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24")
+        )
+```
+
+Pour détecter les balises à proximité, nous avons utilisé la bibliothèque Android Beacon Library. La
+1ère étape consiste à configurer le `BeaconManager` en ajoutant un `BeaconParser` pour chaque
+type de balise que nous souhaitons détecter. Dans notre cas, nous avons utilisé le format iBeacon
+qui est le plus courant. Le `BeaconParser` est configuré pour extraire les informations de
+l'annonce Bluetooth et les convertir en objets `Beacon` que nous pouvons utiliser dans notre code.
+
+```kotlin
+        // monitor
+        val region = BeaconRegion("test", BeaconParser(), null, null, null)
+        beaconManager.getRegionViewModel(region).rangedBeacons.observe(this, rangingObserver)
+        Log.d(TAG, "Observer added")
+        beaconManager.startRangingBeacons(region)
+        beaconManager.startMonitoring(region)
+```
+
+Ensuite, nous avons créé une `BeaconRegion` pour définir les critères de détection des balises. Ici,
+nous avons utilisé un `BeaconRegion` générique qui correspond à toutes les balises iBeacon. Nous avons
+ensuite ajouté un `Observer` pour écouter les balises détectées et démarré le monitoring et le scanning. Le `BeaconManager` va alors commencer à recevoir les annonces Bluetooth des balises à proximité.
 
 ### Questions
 
@@ -17,11 +44,9 @@ librairie. Selon la documentation officielle de Android Beacon Library, les anno
 reçues de manière intermittente et peuvent être manquées en raison de plusieurs facteurs:
 
 - __Nature intermittente des signaux BLE__ : Les balises transmettent typiquement leurs signaux à
-  des
-  intervalles de 100ms à 1s.
+  des intervalles de 100ms à 1s.
 - __Scanning cyclique__ : Le smartphone ne scanne pas en continu mais par cycles, ce qui implique
-  que
-  certaines annonces peuvent être manquées.
+  que certaines annonces peuvent être manquées.
 - __Interférences et obstacles__ : Les obstacles physiques et interférences radio peuvent bloquer
   certaines transmissions.
 - __Rotation des appareils__ : L'orientation du téléphone peut affecter la réception du signal.
@@ -88,7 +113,13 @@ La stratégie de filtrage est donc la suivante :
 
 ## 2. Déterminer sa position
 
-### Choix d'implémenation
+### Choix d'implémentation
+
+Afin de stocker les positions du smartphone par rapport aux différentes balises, nous avons choisi
+d'utiliser une Map, la __clé__ étant le numéro __mineur__ de la balise et la __valeur__ étant le _
+_nom de la "pièce"__
+dans laquelle se trouve le smartphone. Le __facteur déterminant__ la balise plus proche est la _
+_distance__.
 
 ### Questions
 
@@ -99,7 +130,7 @@ La stratégie de filtrage est donc la suivante :
 Les paramètres pertinents sont:
 
 - `distance`: estime la distance entre le smartphone et le beacon en mètres, peu précis, basée sur
-la comparaison du RSSI reçu avec la puissance du signal à 1 mètre (txPower).
+  la comparaison du RSSI reçu avec la puissance du signal à 1 mètre (txPower).
 - `rssi`: représente la puissance du signal Bluetooth reçu, plus le RSSI est élevé, plus le beacon
   est proche.
   Cette valeur fluctue beaucoup en raison des interférences environnementales.
