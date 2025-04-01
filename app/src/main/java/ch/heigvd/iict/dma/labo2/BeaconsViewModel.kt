@@ -40,6 +40,11 @@ class BeaconsViewModel : ViewModel() {
 
     private val _closestBeacon = MutableLiveData<PersistentBeacon?>(null)
     val closestBeacon : LiveData<PersistentBeacon?> get() = _closestBeacon
+    val locations : Map<Int, String> = mapOf(
+        31 to "Salon",
+        38 to "Cuisine",
+        94 to "Salle de bain",
+    ).withDefault { "Inconnu" }
 
     fun updateNearbyBeacons(beacons : List<Beacon>) {
         // Conversion des beacons en PersistentBeacon

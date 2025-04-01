@@ -90,7 +90,8 @@ class MainActivity : AppCompatActivity() {
                     beacon.major,
                     beacon.minor,
                     beacon.distance,
-                    beacon.uuid.toString())
+                    beaconsViewModel.locations.getValue(beacon.minor)
+                )
             } else {
                 binding.location.text = getString(R.string.no_beacons)
             }
