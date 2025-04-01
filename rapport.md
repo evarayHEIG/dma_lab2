@@ -1,4 +1,4 @@
-# DMA - LAB2
+# DMA - LAB2 - Positionnement en intérieur – Les iBeacons
 
 ##### Authors: Yanis Ouadahi, Rachel Tranchida, Eva Ray
 
@@ -8,14 +8,6 @@
 
 #### Mise en place de la détection des beacons
 
-```kotlin
-        // Configuration du BeaconManager
-val beaconManager = BeaconManager.getInstanceForApplication(this)
-beaconManager.beaconParsers.add(
-    BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24")
-)
-```
-
 Pour détecter les balises à proximité, nous avons utilisé la bibliothèque Android Beacon Library. La
 1ère étape consiste à configurer le `BeaconManager` en ajoutant un `BeaconParser` pour chaque
 type de balise que nous souhaitons détecter. Dans notre cas, nous avons utilisé le format iBeacon
@@ -23,12 +15,10 @@ qui est le plus courant. Le `BeaconParser` est configuré pour extraire les info
 l'annonce Bluetooth et les convertir en objets `Beacon` que nous pouvons utiliser dans notre code.
 
 ```kotlin
-        // monitor
-val region = BeaconRegion("test", BeaconParser(), null, null, null)
-beaconManager.getRegionViewModel(region).rangedBeacons.observe(this, rangingObserver)
-Log.d(TAG, "Observer added")
-beaconManager.startRangingBeacons(region)
-beaconManager.startMonitoring(region)
+val beaconManager = BeaconManager.getInstanceForApplication(this)
+beaconManager.beaconParsers.add(
+    BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24")
+)
 ```
 
 Ensuite, nous avons créé une `BeaconRegion` pour définir les critères de détection des balises. Ici,
@@ -37,6 +27,25 @@ avons
 ensuite ajouté un `Observer` pour écouter les balises détectées et démarré le monitoring et le
 scanning. Le `BeaconManager` va alors commencer à recevoir les annonces Bluetooth des balises à
 proximité.
+
+```kotlin
+val region = BeaconRegion("test", BeaconParser(), null, null, null)
+beaconManager.getRegionViewModel(region).rangedBeacons.observe(this, rangingObserver)
+beaconManager.startRangingBeacons(region)
+beaconManager.startMonitoring(region)
+```
+
+Enfin, nous avons créé un `Observer` pour écouter les balises détectées. Cet observer est
+responsable de mettre à jour la liste des balises à proximité dans le ViewModel de l'application.
+Il appelle la méthode `updateNearbyBeacons` du ViewModel pour mettre à jour la liste des balises
+détectées. C'est la méthode du ViewModel qui va ensuite mettre à jour l'interface utilisateur
+en passant par les LiveData `_nearbyBeacons` et `_closestBeacon`.
+
+```kotlin
+val rangingObserver = Observer<Collection<Beacon>> { beacons ->
+    beaconsViewModel.updateNearbyBeacons(beacons.toList())
+}
+```
 
 #### Mise en place d'un cache
 
