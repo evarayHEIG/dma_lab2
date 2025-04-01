@@ -167,6 +167,24 @@ La stratégie de filtrage est donc la suivante :
 - Si besoin: appliquer un filtre pour n'afficher que les iBeacons du groupe (via le numéro mineur
   des balises).
 
+Dans notre labo, nous avons finalement décidé de ne pas garder uniquement les beacons de notre
+groupe, mais nous aurions pu le faire facilement en déclarant un liste de mineurs à garder dans
+`BeaconCache` et en filtrant la liste des beacons détectés dans la méthode `updateCache`.
+
+```kotlin
+companion object {
+    val GROUP_MINORS = intArrayOf(31, 38, 94)
+}
+
+fun updateCache(newBeacons: List<PersistentBeacon>): List<PersistentBeacon> {
+    ...
+    for (beacon in newBeacons) {
+        // Only keep beacons from our lab group
+        if (beacon.major !in GROUP_MINORS) continue
+        ...
+}
+```
+
 ## 2. Déterminer sa position
 
 ### Choix d'implémentation

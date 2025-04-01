@@ -18,11 +18,16 @@ class BeaconCache {
      */
     private val beacons = HashMap<String, PersistentBeacon>()
 
-    /**
-     * The validity duration of a beacon in milliseconds (10 seconds).
-     */
     companion object {
+        /**
+         * The validity duration of a beacon in milliseconds (10 seconds).
+         */
         const val EXPIRATION_MILLIS = 10000L
+
+        /**
+         * Known minors values for the beacons of our lab group
+         */
+        val GROUP_MINORS = intArrayOf(31, 38, 94)
     }
 
     /**
@@ -37,6 +42,8 @@ class BeaconCache {
         val currentTime = System.currentTimeMillis()
 
         for (beacon in newBeacons) {
+            // Only keep beacons from our lab group
+            // if (beacon.major !in GROUP_MINORS) continue
             beacon.lastSeen = currentTime
             val beaconId = beacon.id
 
