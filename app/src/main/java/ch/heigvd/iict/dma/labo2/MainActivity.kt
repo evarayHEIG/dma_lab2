@@ -16,13 +16,19 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import ch.heigvd.iict.dma.labo2.databinding.ActivityMainBinding
-import org.altbeacon.beacon.AltBeaconParser
 import org.altbeacon.beacon.Beacon
 import org.altbeacon.beacon.BeaconManager
 import org.altbeacon.beacon.BeaconParser
 import org.altbeacon.beacon.BeaconRegion
 
-
+/**
+ * MainActivity is the entry point of the application, responsible for initializing Bluetooth,
+ * requesting permissions, and handling beacon detection using the AltBeacon library.
+ *
+ * @author Yanis Ouadahi
+ * @author Rachel Tranchida
+ * @author Eva Ray
+ */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
@@ -85,6 +91,7 @@ class MainActivity : AppCompatActivity() {
         // update views
         beaconsViewModel.closestBeacon.observe(this) {beacon ->
             if(beacon != null) {
+                // update the closest beacon
                 binding.location.text = getString(
                     R.string.beacon_details,
                     beacon.major,

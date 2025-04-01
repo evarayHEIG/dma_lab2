@@ -4,8 +4,13 @@ import androidx.recyclerview.widget.DiffUtil
 import org.altbeacon.beacon.Beacon
 import java.util.*
 
-/*
- *  N'hésitez pas à ajouter des attributs ou des méthodes à cette classe
+/**
+ * Represents a persistent beacon with details such as major, minor, UUID, signal strength, and last seen timestamp.
+ * This class allows tracking beacons over time and provides methods for updating and converting beacon data.
+ *
+ * @author Yanis Ouadahi
+ * @author Rachel Tranchida
+ * @author Eva Ray
  */
 data class PersistentBeacon(
     var major: Int,
@@ -19,7 +24,11 @@ data class PersistentBeacon(
 
     companion object {
 
-        // Convertir un objet Beacon en PersistentBeacon
+        /**
+         * Converts a Beacon object into a PersistentBeacon.
+         * @param beacon The beacon to be converted.
+         * @return A PersistentBeacon instance containing the converted beacon data.
+         */
         fun convertToPersistentBeacon(beacon: Beacon): PersistentBeacon {
             return PersistentBeacon(
                 major = beacon.id2.toInt(),
@@ -33,11 +42,14 @@ data class PersistentBeacon(
         }
     }
 
+    /**
+     * Unique identifier for the beacon, composed of UUID, major, and minor values.
+     */
     val id: String = "$uuid:$major:$minor"
 
     /**
-     * Met à jour les valeurs de la balise avec celles de la balise passée en paramètre
-     * @param beacon La balise à partir de laquelle mettre à jour les valeurs
+     * Updates the values of this beacon with those from the provided beacon.
+     * @param beacon The beacon from which to update the values.
      */
     fun updateFrom(beacon: PersistentBeacon) {
         rssi = beacon.rssi

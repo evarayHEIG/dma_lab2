@@ -7,14 +7,22 @@ import androidx.lifecycle.map
 import ch.heigvd.iict.dma.labo2.models.BeaconCache
 import ch.heigvd.iict.dma.labo2.models.PersistentBeacon
 import org.altbeacon.beacon.Beacon
-import java.util.UUID
 
-
+/**
+ * ViewModel responsible for managing and providing beacon data to the UI.
+ * It maintains a cache of detected beacons and ensures that the UI always receives an immutable and updated list.
+ *
+ * @author Yanis Ouadahi
+ * @author Rachel Tranchida
+ * @author Eva Ray
+ */
 class BeaconsViewModel : ViewModel() {
 
     private val _nearbyBeacons = MutableLiveData(mutableListOf<PersistentBeacon>())
 
-    // Création du cache de beacons
+    /**
+     * Cache for managing beacon data.
+     */
     private val beaconCache = BeaconCache()
 
     /*
@@ -40,24 +48,31 @@ class BeaconsViewModel : ViewModel() {
 
     private val _closestBeacon = MutableLiveData<PersistentBeacon?>(null)
     val closestBeacon : LiveData<PersistentBeacon?> get() = _closestBeacon
+
+    /**
+     * Mapping of known minor values to location names.
+     * Defaults to "Inconnu" if a major value is not listed.
+     */
     val locations : Map<Int, String> = mapOf(
         31 to "Salon",
         38 to "Cuisine",
         94 to "Salle de bain",
     ).withDefault { "Inconnu" }
 
+    /**
+     * Updates the list of nearby beacons with newly detected ones.
+     * Converts raw beacons into persistent format, updates the cache, and refreshes the LiveData values.
+     *
+     * @param beacons The list of newly detected beacons.
+     */
     fun updateNearbyBeacons(beacons : List<Beacon>) {
-        // Conversion des beacons en PersistentBeacon
+
         val newBeacons = beacons.map { PersistentBeacon.convertToPersistentBeacon(it) }
 
-        // Mise à jour du cache et récupération de toutes les balises à jour (y compris celles
-        // qui n'apparaissent pas dans la dernière annonce mais qui sont encore valides)
         val allBeacons = beaconCache.updateCache(newBeacons)
 
-        // Mise à jour des LiveData avec toutes les balises valides
         _nearbyBeacons.value = allBeacons.toMutableList()
 
-        // Mise à jour de la balise la plus proche (basée sur le RSSI le plus élevé)
         _closestBeacon.value = allBeacons.minByOrNull { it.distance }
     }
 }
