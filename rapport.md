@@ -64,10 +64,21 @@ sont pas détectées à chaque cycle d'annonce.
 
 > 1.1.2 Nous souhaitons effectuer un positionnement en arrière-plan, à quel moment faut-il démarrer
 > et éteindre le monitoring des balises ? Sans le mettre en place, que faudrait-il faire pour
-> pouvoir continuer le monitoring alors que l’activité n’est plus active ? PAS FINI
+> pouvoir continuer le monitoring alors que l’activité n’est plus active ?
 
-Aller voir la partie background detection
-ici: [https://altbeacon.github.io/android-beacon-library/documentation.html](https://altbeacon.github.io/android-beacon-library/documentation.html)
+Le moment idéal pour activer le monitoring des balises et lors de l'entrée dans une zone d'intérêt, comme un magasin
+, un musée ou une zone contenant de beacons. Cela peut être détecter à l'aide de la gélocalisation ou de Geofencing.
+De la même manière, lorsque l'utiisateur sort de la zone d'intérêt, il faudrait éteindre le monitoring des balises, ou lorsqu'aucune balise n'a été détectée depuis un certain temps.
+
+On va activer le monitoring des balises en arrière plan lorsque l'application entre en arrière plan et/ou est fermée et que le monitoring est toujours nécessaire.
+Le monitoring peut être arrêté à l'arrêt de l'application, à la demande de l'utilisateur, ou lorsque l'application revient en premier plan
+Pour continuer le monitoring lorsque l'activité n'est plus active, on pourrait utiliser les services foreground d'android.
+
+
+On pourrait définir une classe service pour notre beacon pour faire le monitoring des données en arrière plan.
+Il faudrait définir la méthode `startForeground()` et définir une notification à afficher lorsque l'application run en arrière plan.
+
+Dans le AndroidManifest, il faut demander les autorisations pour le service foreground et déclarer le service que l'on vient de créer.
 
 > 1.1.3 On souhaite trier la liste des balises détectées de la plus proche à la plus éloignée,
 > quelles sont
